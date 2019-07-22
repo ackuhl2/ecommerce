@@ -45,7 +45,6 @@ class Cart extends Model {
 
 				$cart->setToSession();
 
-
 			}
 
 		}
@@ -113,124 +112,62 @@ class Cart extends Model {
 		
 	}
 
-
-	
-
-	public function delete() 
+	public function addProduct(Product $product) 
 	{
 
 		$sql = new Sql();
 		
-		$sql-> query("DELETE FROM tb_categories WHERE idcategory = :idcategory", [
-			":idcategory"=>$this->getidcategory()
+		$sql-> query("INSERT INTO tb_cartsproducts (idcart, idproduct) VALUES(:idcart, :idproduct)", [
+			":idcart"=>$this->getidcart(),
+			":idproduct"=>$product->getidproduct()
 		]);
 
-		Category::updateFile();
-		
 	}
 
-	public static function updateFile() 
-	{
-
-		$categories = Category::listAll();
-
-		$html = [];
-
-		foreach ($categories as $row) {
-			array_push($html, '<li><a href="/categories/'.$row['idcategory'].'">'.$row['descategory'].'</a></li>');
-		}
-
-		file_put_contents($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "views". DIRECTORY_SEPARATOR . "categories-menu.html", implode('', $html));
-		
-	}
-
-	public function getProducts($related = true) 
+	public function removeProduct(Product $product, $all = false) 
 	{
 
 		$sql = new Sql();
 
-		if ($related === true) {
-
-			return $sql->select("
-				SELECT * FROM tb_products WHERE idproduct IN(
-				SELECT a.idproduct
-				FROM tb_products a
-				INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
-				WHERE b.idcategory = :idcategory
-				)
-			", [
-				':idcategory'=>$this->getidcategory()
+		if ($all) {
+		
+			$sql-> query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved IS NULL", [
+				":idcart"=>$this->getidcart(),
+				":idproduct"=>$product->getidproduct()
 			]);
 
 		} else {
 
-			return $sql->select("
-				SELECT * FROM tb_products WHERE idproduct NOT IN(
-				SELECT a.idproduct
-				FROM tb_products a
-				INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
-				WHERE b.idcategory = :idcategory
-				)
-			", [
-				':idcategory'=>$this->getidcategory()
+			$sql-> query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved IS NULL LIMIT 1", [
+				":idcart"=>$this->getidcart(),
+				":idproduct"=>$product->getidproduct()
 			]);
 
 		}
-				
-	}
 
-	public function getProductsPage($page = 1, $itensPerPage = 3) 
-	{
+	}
 		
-		$start = ($page - 1) * $itensPerPage;
-
-		$sql = new Sql();
-
-		$results = $sql->select("
-			SELECT SQL_CALC_FOUND_ROWS * 
-			FROM tb_products a
-			INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
-			INNER JOIN tb_categories c ON c.idcategory = b.idcategory
-			WHERE c.idcategory = :idcategory
-			LIMIT $start, $itensPerPage;
-			", [
-				":idcategory"=>$this->getidcategory()
-			]);
-
-		$resultsTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
-
-		return [
-				'data'=>Product::checkList($results),
-				'total'=>(int)$resultsTotal[0]['nrtotal'],
-				'pages'=>ceil($resultsTotal[0]['nrtotal'] / $itensPerPage)
-		];
-
-	}
-
-	public function addProduct(Product $product)
+	public function getProducts() 
 	{
 
 		$sql = new Sql();
 
-		$sql->query("INSERT INTO tb_productscategories (idcategory, idproduct) VALUES(:idcategory, :idproduct)", [
-			':idcategory'=>$this->getidcategory(),
-			':idproduct'=>$product->getidproduct()
+		$rows = $sql->select("
+			SELECT b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl, count(*) AS nrqtd, SUM(vlprice) AS vltotal
+			FROM tb_cartsproducts a
+			INNER JOIN tb_products b ON a.idproduct = b.idproduct
+			WHERE a.idcart = :idcart AND a.dtremoved IS NULL
+			GROUP BY b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl
+			ORDER BY b.desproduct
+		", [
+			':idcart'=>$this->getidcart()
 		]);
+
+		return Product::checkList($rows);
 
 	}
 
-	public function removeProduct(Product $product)
-	{
-
-		$sql = new Sql();
-
-		$sql->query("DELETE FROM tb_productscategories WHERE idcategory = :idcategory AND idproduct = :idproduct", [
-			':idcategory'=>$this->getidcategory(),
-			':idproduct'=>$product->getidproduct()
-		]);
-
-	}
-
+		
 }
 
 ?>
