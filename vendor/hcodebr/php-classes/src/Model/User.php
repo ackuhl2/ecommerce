@@ -91,9 +91,13 @@ class User extends Model {
 			return $user;
 
 		} else {
+
 			throw new \Exception("Usuário inexistente ou senha inválida.");
+
 		}
+
 	}
+
 	public static function verifyLogin($inadmin = true)
 	{
 		if (!User::checkLogin($inadmin)) {
@@ -106,11 +110,14 @@ class User extends Model {
 			exit;
 
 		}
+
 	}
+
 	public static function logout()
 	{
 
 		$_SESSION[User::SESSION] = NULL;
+
 	}
 
 	public static function listAll()
@@ -210,6 +217,7 @@ class User extends Model {
 		else
 		{
 			$data = $results[0];
+
 			$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
 				":iduser"=>$data['iduser'],
 				":desip"=>$_SERVER['REMOTE_ADDR']
@@ -217,28 +225,41 @@ class User extends Model {
 
 			if (count($results2) === 0)
 			{
+
 				throw new \Exception("Não foi possível recuperar a senha.");
+
 			}
 			else
 			{
+
 				$dataRecovery = $results2[0];
+
 				$code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
+
 				$code = base64_encode($code);
+
 				if ($inadmin === true) {
+
 					$link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$code";
+
 				} else {
+
 					$link = "http://www.hcodecommerce.com.br/forgot/reset?code=$code";
 					
-				}				
+				}		
+
 				$mailer = new Mailer($data['desemail'], $data['desperson'], "Redefinir senha da Hcode Store", "forgot", array(
 					"name"=>$data['desperson'],
 					"link"=>$link
-				));				
+				));		
+
 				$mailer->send();
+
 				return $link;
+				
 			}
 		}
-		
+
 	}
 
 	public static function validForgotDecrypt($code)
