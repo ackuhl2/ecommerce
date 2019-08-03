@@ -189,7 +189,9 @@ class User extends Model {
 
 	public static function getForgot($email, $inadmin = true)
 	{
+
 		$sql = new Sql();
+
 		$results = $sql->select("
 			SELECT *
 			FROM tb_persons a
@@ -198,9 +200,12 @@ class User extends Model {
 		", array(
 			":email"=>$email
 		));
+
 		if (count($results) === 0)
 		{
+
 			throw new \Exception("Não foi possível recuperar a senha.");
+		
 		}
 		else
 		{
@@ -209,6 +214,7 @@ class User extends Model {
 				":iduser"=>$data['iduser'],
 				":desip"=>$_SERVER['REMOTE_ADDR']
 			));
+
 			if (count($results2) === 0)
 			{
 				throw new \Exception("Não foi possível recuperar a senha.");
@@ -232,6 +238,7 @@ class User extends Model {
 				return $link;
 			}
 		}
+		
 	}
 
 	public static function validForgotDecrypt($code)
@@ -265,10 +272,13 @@ class User extends Model {
 	
 	public static function setFogotUsed($idrecovery)
 	{
+
 		$sql = new Sql();
+
 		$sql->query("UPDATE tb_userspasswordsrecoveries SET dtrecovery = NOW() WHERE idrecovery = :idrecovery", array(
 			":idrecovery"=>$idrecovery
 		));
+
 	}
 
 	public function setPassword($password)
@@ -285,7 +295,9 @@ class User extends Model {
 
 	public static function setError($msg)
 	{
+
 		$_SESSION[User::ERROR] = $msg;
+
 	}
 
 	public static function getError()
@@ -299,41 +311,59 @@ class User extends Model {
 
 	public static function clearError()
 	{
+
 		$_SESSION[User::ERROR] = NULL;
+
 	}
 
 	public static function setSuccess($msg)
 	{
+
 		$_SESSION[User::SUCCESS] = $msg;
+
 	}
 
 	public static function getSuccess()
 	{
+
 		$msg = (isset($_SESSION[User::SUCCESS]) && $_SESSION[User::SUCCESS]) ? $_SESSION[User::SUCCESS] : '';
+		
 		User::clearSuccess();
+		
 		return $msg;
+
 	}
 
 	public static function clearSuccess()
 	{
+
 		$_SESSION[User::SUCCESS] = NULL;
+
 	}
 
 	public static function setErrorRegister($msg)
 	{
+
 		$_SESSION[User::ERROR_REGISTER] = $msg;
+
 	}
 
 	public static function getErrorRegister()
 	{
+
 		$msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER]) ? $_SESSION[User::ERROR_REGISTER] : '';
+		
 		User::clearErrorRegister();
+		
 		return $msg;
+
 	}
 
 	public static function clearErrorRegister()
 	{
+
 		$_SESSION[User::ERROR_REGISTER] = NULL;
+
 	}
 
 	public static function checkLoginExist($login)
@@ -361,7 +391,7 @@ class User extends Model {
 	{
 
 		$sql = new Sql();
-		
+
 		$results = $sql->select("
 			SELECT * 
 			FROM tb_orders a 
