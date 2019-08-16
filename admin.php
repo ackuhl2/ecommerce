@@ -39,7 +39,7 @@ $app->get('/admin/logout', function() {
 
 	header("Location: /admin/login");
 	exit;
-	
+
 });
 
 $app->get("/admin/forgot", function() {
@@ -85,4 +85,5 @@ $app->post("/admin/forgot/reset", function(){
 	]);
 	$page->setTpl("forgot-reset-success");
 });
+
  ?>
