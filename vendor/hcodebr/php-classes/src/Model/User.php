@@ -256,7 +256,7 @@ class User extends Model {
 				$mailer->send();
 
 				return $link;
-				
+
 			}
 		}
 
@@ -265,8 +265,11 @@ class User extends Model {
 	public static function validForgotDecrypt($code)
 	{
 		$code = base64_decode($code);
+
 		$idrecovery = openssl_decrypt($code, 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
+
 		$sql = new Sql();
+
 		$results = $sql->select("
 			SELECT *
 			FROM tb_userspasswordsrecoveries a
@@ -281,6 +284,7 @@ class User extends Model {
 		", array(
 			":idrecovery"=>$idrecovery
 		));
+
 		if (count($results) === 0)
 		{
 			throw new \Exception("Não foi possível recuperar a senha.");
@@ -323,6 +327,7 @@ class User extends Model {
 
 	public static function getError()
 	{
+		
 		$msg = (isset($_SESSION[User::ERROR]) && $_SESSION[User::ERROR]) ? $_SESSION[User::ERROR] : '';
 
 		User::clearError();
@@ -425,12 +430,17 @@ class User extends Model {
 		", [
 			':iduser'=>$this->getiduser()
 		]);
+
 		return $results;
+		
 	}
+
 	public static function getPage($page = 1, $itemsPerPage = 10)
 	{
 		$start = ($page - 1) * $itemsPerPage;
+
 		$sql = new Sql();
+
 		$results = $sql->select("
 			SELECT SQL_CALC_FOUND_ROWS *
 			FROM tb_users a 
@@ -438,7 +448,9 @@ class User extends Model {
 			ORDER BY b.desperson
 			LIMIT $start, $itemsPerPage;
 		");
+
 		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
+
 		return [
 			'data'=>$results,
 			'total'=>(int)$resultTotal[0]["nrtotal"],
