@@ -49,9 +49,6 @@ $app->post("/admin/orders/:idorder/status", function($idorder) {
 
 });
 
-
-
-
 $app->get("/admin/orders/:idorder/delete", function($idorder) {
 
 	User::verifyLogin();
@@ -84,7 +81,6 @@ $app->get("/admin/orders/:idorder", function($idorder) {
 		'cart'=>$cart->getValues(),
 		'products'=>$cart->getProducts()
 	]);
-
 
 });
 
